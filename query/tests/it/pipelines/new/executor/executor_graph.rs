@@ -163,18 +163,18 @@ async fn test_resize_pipeline_init_queue() -> Result<()> {
 //     unsafe {
 //         let (mut rx, sink_pipe) = create_sink_pipe(1)?;
 //         let (mut tx, source_pipe) = create_source_pipe(1)?;
-//
+
 //         let mut pipeline = NewPipeline::create();
 //         pipeline.add_pipe(source_pipe);
 //         pipeline.add_pipe(create_transform_pipe(1)?);
 //         pipeline.add_pipe(sink_pipe);
-//
+
 //         let executor = PipelineExecutor::create(pipeline, 1)?;
 //         let thread1_executor = executor.clone();
 //         let thread1 = std::thread::spawn(move || {
 //             thread1_executor.execute_with_single_worker(0);
 //         });
-//
+
 //         let thread2 = std::thread::spawn(move || {
 //             let tx = tx.remove(0);
 //             for index in 0..5 {
@@ -182,20 +182,20 @@ async fn test_resize_pipeline_init_queue() -> Result<()> {
 //                 tx.blocking_send(Ok(DataBlock::create(Arc::new(schema), vec![DataColumn::Constant(DataValue::Int64(index), 2)])));
 //             }
 //         });
-//
+
 //         let thread3 = std::thread::spawn(move || {
 //             while let Some(data) = rx[0].blocking_recv() {
 //                 println!("{:?}", data);
 //             }
 //         });
-//
+
 //         thread2.join();
 //         // thread3.join();
 //         executor.finish();
 //         thread1.join();
 //     }
-//
-//
+
+
 //     unimplemented!("")
 // }
 

@@ -208,6 +208,7 @@ enum AggregatorTransform<TAggregator: Aggregator> {
     ConsumeData(ConsumeState<TAggregator>),
     Generate(GenerateState<TAggregator>),
     Finished,
+    ExpandPipeline,
 }
 
 impl<TAggregator: Aggregator + 'static> AggregatorTransform<TAggregator> {
@@ -251,6 +252,7 @@ impl<TAggregator: Aggregator + 'static> Processor for AggregatorTransform<TAggre
     fn event(&mut self) -> Result<Event> {
         match self {
             AggregatorTransform::Finished => Ok(Event::Finished),
+            AggregatorTransform::ExpandPipeline => Ok(Event::ExpandPipeline),
             AggregatorTransform::Generate(_) => self.generate_event(),
             AggregatorTransform::ConsumeData(_) => self.consume_event(),
         }
@@ -261,6 +263,10 @@ impl<TAggregator: Aggregator + 'static> Processor for AggregatorTransform<TAggre
             AggregatorTransform::Finished => Ok(()),
             AggregatorTransform::ConsumeData(state) => state.consume(),
             AggregatorTransform::Generate(state) => state.generate(),
+            AggregatorTransform::ExpandPipeline => {
+                println!("test");
+                Ok(())
+            }
         }
     }
 }
@@ -329,6 +335,10 @@ impl<TAggregator: Aggregator + 'static> AggregatorTransform<TAggregator> {
         }
 
         Err(ErrorCode::LogicalError("It's a bug"))
+    }
+
+    fn expand_pipeline(&self) {
+        println!("transform expand pipeline");
     }
 }
 

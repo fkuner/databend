@@ -40,6 +40,7 @@ use crate::pipelines::new::processors::DirectedEdge;
 use crate::pipelines::new::processors::UpdateList;
 use crate::pipelines::new::processors::UpdateTrigger;
 
+#[derive(Clone, Copy)]
 enum State {
     Idle,
     // Preparing,
@@ -49,7 +50,7 @@ enum State {
 
 struct Node {
     state: std::sync::Mutex<State>,
-    processor: ProcessorPtr,
+    pub processor: ProcessorPtr,
 
     updated_list: Arc<UpdateList>,
     #[allow(dead_code)]
@@ -84,6 +85,7 @@ impl Node {
 
 struct ExecutingGraph {
     graph: StableGraph<Arc<Node>, ()>,
+    // processors: Vec<ProcessorPtr>,
 }
 
 type StateLockGuard = ExecutingGraph;
@@ -182,6 +184,16 @@ impl ExecutingGraph {
         Ok(ExecutingGraph { graph })
     }
 
+    
+    pub unsafe fn expand_pipeline(locker: &StateLockGuard, node_id: NodeIndex) {
+        // let cur_node: Node = locker.graph[node_id].as_ref();
+        // cur_node.processor.expand_pipeline();
+        // insert processors
+        // add edge
+        // update node
+        println!("executor graph expand pipeline");
+    }
+
     /// # Safety
     ///
     /// Method is thread unsafe and require thread safe call
@@ -204,6 +216,8 @@ impl ExecutingGraph {
     ) -> Result<()> {
         let mut need_schedule_nodes = VecDeque::new();
         let mut need_schedule_edges = VecDeque::new();
+
+        let mut need_expand_pipeline = false;
 
         need_schedule_nodes.push_back(index);
         while !need_schedule_nodes.is_empty() || !need_schedule_edges.is_empty() {
@@ -241,9 +255,17 @@ impl ExecutingGraph {
                         schedule_queue.push_async(node.processor.clone());
                         State::Processing
                     }
+                    Event::ExpandPipeline => {
+                        need_expand_pipeline = true;
+                        node.state.into_inner().unwrap()
+                    }
                 };
 
                 node.trigger(&mut need_schedule_edges);
+            }
+
+            if need_expand_pipeline == true {
+                ExecutingGraph::expand_pipeline(locker, index);
             }
         }
 

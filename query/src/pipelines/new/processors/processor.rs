@@ -28,6 +28,7 @@ pub enum Event {
     Sync,
     Async,
     Finished,
+    ExpandPipeline,
 }
 
 // The design is inspired by ClickHouse processors
@@ -45,6 +46,10 @@ pub trait Processor: Send {
     // Asynchronous work.
     async fn async_process(&mut self) -> Result<()> {
         Err(ErrorCode::UnImplement("Unimplemented async_process."))
+    }
+
+    fn expand_pipeline(&self) -> Result<Vec<ProcessorPtr>> {
+        Err(ErrorCode::UnImplement("Unimplemented process."))
     }
 }
 
@@ -94,6 +99,11 @@ impl ProcessorPtr {
     /// # Safety
     pub unsafe fn async_process(&self) -> BoxFuture<'static, Result<()>> {
         (*self.inner.get()).async_process().boxed()
+    }
+
+    /// # Safety
+    pub unsafe fn expand_pipeline(&self) -> Result<Vec<ProcessorPtr>> {
+        (*self.inner.get()).expand_pipeline()
     }
 }
 
